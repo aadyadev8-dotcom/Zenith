@@ -8,7 +8,13 @@
 // Quick tunnels (trycloudflare.com) get a NEW address every time you restart them,
 // so update this line whenever that happens.
 // The n8n workflow must be Active to use /webhook/ (use /webhook-test/ while testing).
-const WEBHOOK_URL = "https://revolution-broker-window-options.trycloudflare.com/webhook/caremate-process";
+const WEBHOOK_URL = "https://stopping-acid-organised-attorney.trycloudflare.com/webhook/caremate-process";
+
+// 1b) Your Supabase keys (Supabase dashboard -> Project Settings -> API).
+// The "anon public" key is meant to be used in the browser, so it's fine here.
+// NEVER put the "service_role" key in this file.
+const SUPABASE_URL = "https://nconginxynzheiidumbn.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_dNA976DubUe0uLJhDzstHg_lT7OCL2Y";
 
 // 2) Application state. n8n's response fills this in.
 const state = {
@@ -26,6 +32,32 @@ let lastFile = null; // remembered so "Try Again" can resend it
 
 // Short helper to grab elements by id
 const $ = (id) => document.getElementById(id);
+
+// True if the person asked their device to reduce motion
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// Counts a number up (or down) to its new value, e.g. 0 -> 3
+function animateNumber(el, target) {
+  const to = Number(target);
+  if (Number.isNaN(to)) { el.textContent = target; return; }
+
+  const from = Number(el.dataset.value || 0);
+  el.dataset.value = to;
+  if (prefersReducedMotion || from === to) { el.textContent = to; return; }
+
+  const token = (el._tick = (el._tick || 0) + 1); // cancels an older animation on the same number
+  const start = performance.now();
+  const duration = 700;
+
+  function tick(now) {
+    if (el._tick !== token) return;
+    const t = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.round(from + (to - from) * eased);
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
 
 
 // =====================================================
@@ -82,15 +114,32 @@ function toItem(entry) {
 
 function showLandingPage() {
   $("dashboard-page").classList.add("hidden");
+  $("auth-page").classList.add("hidden");
   $("landing-page").classList.remove("hidden");
   document.body.classList.remove("in-dashboard");
   window.scrollTo(0, 0);
 }
 
-function showDashboard() {
+function showAuthPage(mode) {
   $("landing-page").classList.add("hidden");
+  $("dashboard-page").classList.add("hidden");
+  $("auth-page").classList.remove("hidden");
+  document.body.classList.remove("in-dashboard");
+  setAuthMode(mode || "signin");
+  window.scrollTo(0, 0);
+}
+
+function showDashboard() {
+  // Only signed-in users can see the dashboard
+  if (!currentUser) {
+    showAuthPage("signin");
+    return;
+  }
+  $("landing-page").classList.add("hidden");
+  $("auth-page").classList.add("hidden");
   $("dashboard-page").classList.remove("hidden");
   document.body.classList.add("in-dashboard");
+  $("profile-name").textContent = currentUser.name || "Patient";
   window.scrollTo(0, 0);
   renderAll();
   showView("dashboard");
@@ -150,9 +199,9 @@ function renderDashboard() {
   const tasks = state.data.follow_ups || [];
 
   // Numbers
-  $("stat-reports").textContent   = d.total_reports ?? docs.length;
-  $("stat-upcoming").textContent  = d.upcoming_appointments_count ?? 0;
-  $("stat-followups").textContent = d.follow_ups_count ?? tasks.length;
+  animateNumber($("stat-reports"),   d.total_reports ?? docs.length);
+  animateNumber($("stat-upcoming"),  d.upcoming_appointments_count ?? 0);
+  animateNumber($("stat-followups"), d.follow_ups_count ?? tasks.length);
 
   // Header text (only if the dashboard is the open view)
   if ($("view-dashboard").classList.contains("active")) {
@@ -225,7 +274,7 @@ function renderTimeline() {
     return;
   }
 
-  $("timeline-list").innerHTML = `<div class="timeline">${items.map((item) => {
+  $("timeline-list").innerHTML = `<div class="timeline">${items.map((item, index) => {
     const isAssumption = String(item.badge).toUpperCase() === "ASSUMPTION";
 
     // Never hide uncertainty: assumptions always show a reason box
@@ -237,7 +286,7 @@ function renderTimeline() {
       : "";
 
     return `
-      <div class="tl-item ${isAssumption ? "assumption" : "fact"}">
+      <div class="tl-item ${isAssumption ? "assumption" : "fact"}" style="--i:${Math.min(index, 8)}">
         <span class="tl-dot"></span>
         <div class="tl-date">${esc(item.date)}</div>
         <div class="tl-box">
@@ -452,7 +501,11 @@ function onFileChosen(event) {
   const file = event.target.files[0];
   event.target.value = ""; // lets the same file be picked again later
   if (!file) return;
+  handleFile(file);
+}
 
+// Used by both the Upload button and drag-and-drop
+function handleFile(file) {
   showView("dashboard"); // the processing message lives on the dashboard
 
   if (!isSupportedFile(file)) {
@@ -462,6 +515,224 @@ function onFileChosen(event) {
     return;
   }
   uploadDocument(file);
+}
+
+
+// =====================================================
+// Authentication (Supabase)
+// Accounts and passwords are stored by Supabase, not in this browser.
+// =====================================================
+
+let currentUser = null;   // { name, email } or null
+let authMode = "signin";  // "signin" or "signup"
+
+// Create the Supabase connection (stays null until you add your keys)
+let sb = null;
+try {
+  if (window.supabase && !SUPABASE_URL.includes("YOUR_SUPABASE") && !SUPABASE_ANON_KEY.includes("YOUR_SUPABASE")) {
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch (e) {
+  console.error("Supabase setup failed:", e);
+}
+
+// Turns a Supabase session into the small user object the page uses
+function userFromSession(session) {
+  if (!session || !session.user) return null;
+  const u = session.user;
+  const meta = u.user_metadata || {};
+  return { name: meta.full_name || (u.email || "").split("@")[0], email: u.email };
+}
+
+// Turns a Supabase error into a short code that handleAuthSubmit understands
+function authErrorToCode(error) {
+  const code = String(error.code || "").toLowerCase();
+  const msg = String(error.message || "").toLowerCase();
+  if (code === "user_already_exists" || msg.includes("already registered")) return "exists";
+  if (code === "invalid_credentials" || msg.includes("invalid login")) return "invalid";
+  if (code === "email_not_confirmed" || msg.includes("not confirmed")) return "unconfirmed";
+  if (code === "weak_password" || msg.includes("password should")) return "weak";
+  if (code.includes("rate_limit") || error.status === 429) return "rate";
+  console.error("Supabase auth error:", error);
+  return "other";
+}
+
+// Returns "signed-in", or "confirm" if Supabase emailed a confirmation link
+async function signUp(name, email, password) {
+  if (!sb) throw new Error("not-configured");
+
+  const { data, error } = await sb.auth.signUp({
+    email: email,
+    password: password,
+    options: { data: { full_name: name } }
+  });
+  if (error) throw new Error(authErrorToCode(error));
+
+  // For an email that's already registered, Supabase returns a user with no identities
+  if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+    throw new Error("exists");
+  }
+
+  // No session yet = the person must click the link in their email first
+  if (!data.session) return "confirm";
+
+  currentUser = userFromSession(data.session);
+  return "signed-in";
+}
+
+async function signIn(email, password) {
+  if (!sb) throw new Error("not-configured");
+
+  const { data, error } = await sb.auth.signInWithPassword({ email: email, password: password });
+  if (error) throw new Error(authErrorToCode(error));
+
+  currentUser = userFromSession(data.session);
+}
+
+async function signOut() {
+  try {
+    if (sb) await sb.auth.signOut();
+  } catch (e) {
+    console.error("Sign out failed:", e);
+  }
+  clearSignedInScreen();
+}
+
+// Clears the previous patient's data from the screen and returns to the landing page
+function clearSignedInScreen() {
+  currentUser = null;
+  lastFile = null;
+  state.data = {
+    dashboard: {}, timeline: [], documents: [],
+    appointments: [], follow_ups: [], doctor_briefing: {}
+  };
+  setUploadState("idle");
+  renderAll();
+  showLandingPage();
+}
+
+// If Supabase still has a saved session from earlier, sign the person back in
+async function restoreSession() {
+  if (!sb) return;
+  try {
+    const { data } = await sb.auth.getSession();
+    currentUser = userFromSession(data.session);
+  } catch (e) {
+    console.error("Could not restore session:", e);
+  }
+
+  // If the session ends (expired, or signed out in another tab), leave the dashboard
+  sb.auth.onAuthStateChange((event) => {
+    if (event === "SIGNED_OUT" && currentUser) clearSignedInScreen();
+  });
+}
+
+// ---------- Auth page UI ----------
+
+function setAuthMode(mode) {
+  authMode = mode;
+  const signup = mode === "signup";
+
+  $("tab-signin").classList.toggle("active", !signup);
+  $("tab-signup").classList.toggle("active", signup);
+
+  $("auth-heading").textContent = signup ? "Create your account" : "Welcome back";
+  $("auth-sub").textContent = signup
+    ? "Start organizing your healthcare information."
+    : "Sign in to see your care overview.";
+  $("auth-submit").textContent = signup ? "Create account" : "Sign in";
+
+  $("field-name").classList.toggle("hidden", !signup);
+  $("field-confirm").classList.toggle("hidden", !signup);
+  $("pw-hint").classList.toggle("hidden", !signup);
+  $("auth-password").autocomplete = signup ? "new-password" : "current-password";
+  $("auth-password").placeholder = signup ? "Create a password" : "Enter your password";
+
+  $("auth-switch").innerHTML = signup
+    ? 'Already have an account? <button type="button" data-mode="signin">Sign in</button>'
+    : 'New to CareMate? <button type="button" data-mode="signup">Create an account</button>';
+
+  clearAuthError();
+}
+
+function showAuthError(message, fieldId) {
+  const box = $("auth-error");
+  box.textContent = message;
+  box.classList.remove("hidden");
+  if (fieldId) {
+    $(fieldId).classList.add("invalid");
+    $(fieldId).focus();
+  }
+}
+
+function showAuthInfo(message) {
+  $("auth-info").textContent = message;
+  $("auth-info").classList.remove("hidden");
+}
+
+function clearAuthError() {
+  $("auth-info").classList.add("hidden");
+  $("auth-error").classList.add("hidden");
+  document.querySelectorAll("#auth-form input").forEach((i) => i.classList.remove("invalid"));
+}
+
+async function handleAuthSubmit(event) {
+  event.preventDefault();
+  clearAuthError();
+
+  const name = $("auth-name").value.trim();
+  const email = $("auth-email").value.trim();
+  const password = $("auth-password").value;
+  const confirm = $("auth-confirm").value;
+  const signup = authMode === "signup";
+
+  // Check the form before doing any work
+  if (signup && !name) return showAuthError("Please enter your name.", "auth-name");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showAuthError("Please enter a valid email address.", "auth-email");
+  if (!password) return showAuthError("Please enter your password.", "auth-password");
+  if (signup && password.length < 8) return showAuthError("Your password needs at least 8 characters.", "auth-password");
+  if (signup && password !== confirm) return showAuthError("The passwords don't match.", "auth-confirm");
+
+  const button = $("auth-submit");
+  button.disabled = true;
+  button.textContent = "Please wait...";
+
+  try {
+    if (signup) {
+      const result = await signUp(name, email, password);
+
+      // Email confirmation is on: ask them to check their inbox, then sign in
+      if (result === "confirm") {
+        setAuthMode("signin");
+        $("auth-email").value = email;
+        $("auth-name").value = "";
+        $("auth-password").value = "";
+        $("auth-confirm").value = "";
+        showAuthInfo("We sent a confirmation link to " + email + ". Confirm your email, then sign in.");
+        return;
+      }
+    } else {
+      await signIn(email, password);
+    }
+
+    $("auth-form").reset();
+    showDashboard();
+
+  } catch (error) {
+    const messages = {
+      "exists":         "An account with this email already exists. Try signing in.",
+      "invalid":        "Incorrect email or password.",
+      "unconfirmed":    "Please confirm your email first. Check your inbox for the confirmation link.",
+      "weak":           "Please choose a stronger password, with at least 8 characters.",
+      "rate":           "Too many attempts. Please wait a minute and try again.",
+      "not-configured": "Sign-in isn't set up yet. Add your Supabase URL and key at the top of script.js."
+    };
+    if (error.message === "not-configured") console.error("Add SUPABASE_URL and SUPABASE_ANON_KEY in script.js");
+    showAuthError(messages[error.message] || "Something went wrong. Please try again.");
+  } finally {
+    button.disabled = false;
+    button.textContent = authMode === "signup" ? "Create account" : "Sign in";
+  }
 }
 
 
@@ -483,10 +754,42 @@ function closeSidebar() {
 // Wire everything up
 // =====================================================
 
-// All "Get Started" and "Sign In" buttons open the dashboard
+// "Get Started": go to the dashboard if signed in, otherwise create an account
 document.querySelectorAll(".js-get-started").forEach((el) => {
-  el.addEventListener("click", (e) => { e.preventDefault(); showDashboard(); });
+  el.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (currentUser) showDashboard();
+    else showAuthPage("signup");
+  });
 });
+
+// "Sign In": go to the dashboard if already signed in, otherwise the sign-in form
+document.querySelectorAll(".js-sign-in").forEach((el) => {
+  el.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (currentUser) showDashboard();
+    else showAuthPage("signin");
+  });
+});
+
+// Auth page
+$("auth-form").addEventListener("submit", handleAuthSubmit);
+$("tab-signin").addEventListener("click", () => setAuthMode("signin"));
+$("tab-signup").addEventListener("click", () => setAuthMode("signup"));
+$("auth-switch").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-mode]");
+  if (btn) setAuthMode(btn.dataset.mode);
+});
+$("auth-brand").addEventListener("click", (e) => { e.preventDefault(); showLandingPage(); });
+$("auth-back").addEventListener("click", (e) => { e.preventDefault(); showLandingPage(); });
+$("pw-toggle").addEventListener("click", () => {
+  const input = $("auth-password");
+  const show = input.type === "password";
+  input.type = show ? "text" : "password";
+  $("pw-toggle").textContent = show ? "Hide" : "Show";
+  $("pw-toggle").setAttribute("aria-label", show ? "Hide password" : "Show password");
+});
+$("sign-out").addEventListener("click", signOut);
 
 // Dashboard sidebar links
 document.querySelectorAll(".side-link").forEach((btn) => {
@@ -515,6 +818,22 @@ $("retry-btn").addEventListener("click", () => {
   else $("file-input").click();
 });
 
+// Drag and drop a file onto the upload card
+const uploadCard = $("upload-card");
+["dragenter", "dragover"].forEach((type) => {
+  uploadCard.addEventListener(type, (e) => { e.preventDefault(); uploadCard.classList.add("dragover"); });
+});
+["dragleave", "drop"].forEach((type) => {
+  uploadCard.addEventListener(type, (e) => { e.preventDefault(); uploadCard.classList.remove("dragover"); });
+});
+uploadCard.addEventListener("drop", (e) => {
+  const file = e.dataTransfer && e.dataTransfer.files[0];
+  if (file) handleFile(file);
+});
+// If a file is dropped outside the card, don't let the browser open it
+window.addEventListener("dragover", (e) => e.preventDefault());
+window.addEventListener("drop", (e) => e.preventDefault());
+
 // Landing page mobile menu
 $("nav-toggle").addEventListener("click", () => {
   const open = $("nav-links").classList.toggle("open");
@@ -527,5 +846,44 @@ document.querySelectorAll("#nav-links a").forEach((a) => {
   });
 });
 
-// Draw the empty states on first load
+// Landing page: cards and steps fade in as you scroll down to them
+function setupScrollReveal() {
+  if (prefersReducedMotion || !("IntersectionObserver" in window)) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      const el = entry.target;
+      observer.unobserve(el);
+      el.classList.add("in-view");
+
+      // Remove the helper classes afterwards so hover effects stay snappy
+      if (el.classList.contains("reveal")) {
+        setTimeout(() => {
+          el.classList.remove("reveal", "in-view");
+          el.style.transitionDelay = "";
+        }, 1500);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: "0px 0px -40px 0px" });
+
+  // Cards, steps and headings fade up, one after another within their row
+  document.querySelectorAll(".section-head, .feature-card, .trust-card, .step, .cta-banner").forEach((el) => {
+    const position = Array.from(el.parentElement.children).indexOf(el);
+    el.classList.add("reveal");
+    el.style.transitionDelay = Math.min(position, 5) * 90 + "ms";
+    observer.observe(el);
+  });
+
+  // The line between the five steps draws itself
+  const steps = document.querySelector(".steps");
+  if (steps) {
+    steps.classList.add("draw-line");
+    observer.observe(steps);
+  }
+}
+
+// On first load: draw the empty states, then restore a saved Supabase sign-in
 renderAll();
+setupScrollReveal();
+restoreSession();

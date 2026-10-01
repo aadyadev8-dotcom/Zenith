@@ -38,6 +38,7 @@
     <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 4 2.8 19.5h18.4L12 4Z M12 10v4.5 M12 17.2v.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3 M16 8l4 4-4 4 M20 12H9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   </defs>
 </svg>
@@ -62,13 +63,13 @@
         <a href="#how">How It Works</a>
         <a href="#about">About</a>
         <div class="nav-links-mobile-actions">
-          <a href="#" class="btn btn-ghost js-get-started">Sign In</a>
+          <a href="#" class="btn btn-ghost js-sign-in">Sign In</a>
           <a href="#" class="btn btn-primary js-get-started">Get Started</a>
         </div>
       </nav>
 
       <div class="nav-actions">
-        <a href="#" class="link-signin js-get-started">Sign In</a>
+        <a href="#" class="link-signin js-sign-in">Sign In</a>
         <a href="#" class="btn btn-primary js-get-started">Get Started</a>
         <button class="icon-btn nav-toggle" id="nav-toggle" aria-label="Open menu" aria-expanded="false">
           <svg><use href="#i-menu"/></svg>
@@ -91,7 +92,7 @@
           <p class="hero-text">CareMate brings your reports, prescriptions, appointments and follow-ups together in one simple place, helping you stay organized throughout your healthcare journey.</p>
 
           <div class="hero-buttons">
-            <a href="#" class="btn btn-primary btn-lg js-get-started">Get Started →</a>
+            <a href="#" class="btn btn-primary btn-lg js-get-started">Get Started <span class="arrow">→</span></a>
             <a href="#how" class="btn btn-outline btn-lg">Learn How It Works</a>
           </div>
 
@@ -106,7 +107,7 @@
           <div class="hero-circle" aria-hidden="true"></div>
           <div class="doctor-frame">
             <!-- Save your doctor photo next to index.html as doctor.jpg -->
-            <img src="assets/doctor1.png" alt="Doctor in a white coat" />
+            <img src="assets/doctor1.png" alt="A friendly doctor in a white coat with a stethoscope" />
           </div>
           <div class="hero-badge">
             <span class="hero-badge-icon"><svg><use href="#i-hand"/></svg></span>
@@ -243,7 +244,7 @@
         <div class="cta-banner">
           <h2>Your Health. Our Care.</h2>
           <p>Bring your healthcare information together and make every next step easier to manage.</p>
-          <a href="#" class="btn btn-primary btn-lg js-get-started">Get Started →</a>
+          <a href="#" class="btn btn-primary btn-lg js-get-started">Get Started <span class="arrow">→</span></a>
         </div>
       </div>
     </section>
@@ -276,6 +277,66 @@
 
 
 <!-- =====================================================
+     AUTH PAGE: sign in / create account
+     ===================================================== -->
+<div id="auth-page" class="hidden">
+  <header class="auth-top">
+    <a href="#" class="brand" id="auth-brand" aria-label="Back to CareMate home">
+      <svg class="brand-icon"><use href="#i-logo"/></svg>
+      <span>CareMate</span>
+    </a>
+    <a href="#" class="auth-back" id="auth-back">← Back to home</a>
+  </header>
+
+  <main class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" id="tab-signin" data-mode="signin">Sign in</button>
+        <button type="button" class="auth-tab" id="tab-signup" data-mode="signup">Create account</button>
+      </div>
+
+      <h1 id="auth-heading">Welcome back</h1>
+      <p class="auth-sub" id="auth-sub">Sign in to see your care overview.</p>
+
+      <form id="auth-form" novalidate>
+        <div class="field hidden" id="field-name">
+          <label for="auth-name">Full name</label>
+          <input type="text" id="auth-name" autocomplete="name" placeholder="Your name" />
+        </div>
+
+        <div class="field">
+          <label for="auth-email">Email</label>
+          <input type="email" id="auth-email" autocomplete="email" placeholder="you@example.com" />
+        </div>
+
+        <div class="field">
+          <label for="auth-password">Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="auth-password" autocomplete="current-password" placeholder="Enter your password" />
+            <button type="button" class="pw-toggle" id="pw-toggle" aria-label="Show password">Show</button>
+          </div>
+          <p class="field-hint hidden" id="pw-hint">At least 8 characters.</p>
+        </div>
+
+        <div class="field hidden" id="field-confirm">
+          <label for="auth-confirm">Confirm password</label>
+          <input type="password" id="auth-confirm" autocomplete="new-password" placeholder="Re-enter your password" />
+        </div>
+
+        <p class="form-info hidden" id="auth-info" role="status"></p>
+        <p class="form-error hidden" id="auth-error" role="alert"></p>
+
+        <button type="submit" class="btn btn-primary btn-lg btn-block" id="auth-submit">Sign in</button>
+      </form>
+
+      <p class="auth-switch" id="auth-switch"></p>
+      <p class="auth-note">Sign-in is handled securely by Supabase.</p>
+    </div>
+  </main>
+</div>
+
+
+<!-- =====================================================
      PART 2: PATIENT DASHBOARD  (hidden until "Get Started")
      ===================================================== -->
 <div id="dashboard-page" class="hidden">
@@ -300,7 +361,10 @@
         <button class="side-link" data-view="briefing"><svg><use href="#i-briefing"/></svg> Doctor Briefing</button>
       </nav>
 
-      <button class="side-back" id="back-to-landing"><svg><use href="#i-back"/></svg> Back to home page</button>
+      <div class="side-bottom">
+        <button class="side-back" id="back-to-landing"><svg><use href="#i-back"/></svg> Back to home page</button>
+        <button class="side-back" id="sign-out"><svg><use href="#i-logout"/></svg> Sign out</button>
+      </div>
     </aside>
     <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
@@ -315,7 +379,7 @@
           <p id="page-subtitle">Here's your care overview.</p>
         </div>
         <div class="profile">
-          <span class="profile-name">Patient</span>
+          <span class="profile-name" id="profile-name">Patient</span>
           <span class="avatar"><svg><use href="#i-user"/></svg></span>
         </div>
       </header>
@@ -349,7 +413,7 @@
               <div class="upload-text">
                 <h2>Add your medical documents</h2>
                 <p>Upload reports, prescriptions, clinical notes or appointment documents.</p>
-                <small>Supported: PDF, PNG, JPG</small>
+                <small>Supported: PDF, PNG, JPG. You can also drop a file here.</small>
               </div>
               <button class="btn btn-primary" id="upload-btn">+ Upload Document</button>
             </div>
@@ -451,6 +515,8 @@
   </div>
 </div>
 
+<!-- Supabase client (handles sign up / sign in) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="script.js"></script>
 </body>
 </html>

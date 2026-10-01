@@ -272,10 +272,11 @@ body.in-dashboard { background: var(--sky); }
 .side-link.active { background: var(--sky-2); color: var(--navy); font-weight: 600; }
 .side-link.active svg { color: var(--blue-dark); }
 .side-back {
-  margin-top: auto; display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
   padding: 10px 14px; background: none; border: 0; border-radius: 10px;
   font-size: 14px; color: var(--muted);
 }
+.side-bottom { margin-top: auto; display: grid; gap: 2px; }
 .side-back:hover { background: var(--sky); color: var(--navy); }
 .side-back svg { width: 18px; height: 18px; }
 .sidebar-backdrop { display: none; }
@@ -291,7 +292,7 @@ body.in-dashboard { background: var(--sky); }
 .topbar-title p { color: var(--muted); margin-top: 2px; }
 .menu-btn { display: none; }
 .profile { display: flex; align-items: center; gap: 12px; }
-.profile-name { font-weight: 600; color: var(--navy); font-size: 15px; }
+.profile-name { font-weight: 600; color: var(--navy); font-size: 15px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .avatar { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--sky-2); color: var(--blue-dark); border: 2px solid var(--white); box-shadow: var(--shadow-sm); }
 
 .content { padding: 18px 40px 40px; max-width: 1100px; }
@@ -514,4 +515,135 @@ body.in-dashboard { background: var(--sky); }
   html { scroll-behavior: auto; }
   .spinner { animation-duration: 2.5s; }
   .sidebar { transition: none; }
+}
+
+
+/* =====================================================
+   AUTH PAGE (sign in / create account)
+   ===================================================== */
+#auth-page { min-height: 100vh; display: flex; flex-direction: column; background: linear-gradient(180deg, var(--sky-2) 0%, var(--sky) 100%); }
+.auth-top { display: flex; justify-content: space-between; align-items: center; padding: 22px 32px; }
+.auth-back { font-size: 14.5px; font-weight: 600; color: var(--navy); }
+.auth-back:hover { color: var(--blue-dark); }
+.auth-wrap { flex: 1; display: grid; place-items: center; padding: 16px 20px 60px; }
+.auth-card { width: min(440px, 100%); background: var(--white); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 34px 32px; box-shadow: var(--shadow-md); }
+
+.auth-tabs { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; margin-bottom: 26px; background: var(--sky); border-radius: 999px; }
+.auth-tab { padding: 9px 12px; border: 0; border-radius: 999px; background: none; font-weight: 600; font-size: 14.5px; color: var(--muted); }
+.auth-tab.active { background: var(--white); color: var(--navy); box-shadow: var(--shadow-sm); }
+
+.auth-card h1 { font-family: var(--font-display); font-weight: 500; font-size: 30px; line-height: 1.2; color: var(--navy); }
+.auth-sub { margin: 6px 0 22px; color: var(--muted); }
+
+.field { margin-bottom: 16px; }
+.field label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 600; color: var(--navy); }
+.field input {
+  width: 100%; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 12px;
+  font: inherit; color: var(--navy); background: var(--white);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.field input::placeholder { color: #9bb0c6; }
+.field input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 4px var(--sky-2); }
+.field input.invalid { border-color: var(--red); }
+.field-hint { margin-top: 5px; font-size: 12.5px; color: var(--muted); }
+.pw-wrap { position: relative; }
+.pw-wrap input { padding-right: 72px; }
+.pw-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); padding: 6px 10px; background: none; border: 0; font-size: 13px; font-weight: 600; color: var(--blue-dark); }
+
+.form-error { margin-bottom: 14px; padding: 10px 14px; border-radius: 10px; background: var(--red-bg); color: var(--red); font-size: 14px; }
+.form-info { margin-bottom: 14px; padding: 10px 14px; border-radius: 10px; background: var(--sky); border: 1px solid var(--sky-3); color: var(--navy); font-size: 14px; }
+.btn-block { width: 100%; }
+.btn:disabled { opacity: 0.65; cursor: not-allowed; }
+
+.auth-switch { margin-top: 20px; text-align: center; font-size: 14.5px; color: var(--muted); }
+.auth-switch button { padding: 0; background: none; border: 0; font-weight: 600; color: var(--blue-dark); }
+.auth-switch button:hover { text-decoration: underline; }
+.auth-note { margin-top: 12px; text-align: center; font-size: 12.5px; color: var(--muted); }
+
+@media (max-width: 760px) {
+  .auth-top { padding: 16px 20px; }
+  .auth-card { padding: 26px 20px; }
+  .auth-card h1 { font-size: 26px; }
+}
+
+
+/* =====================================================
+   ANIMATIONS
+   Calm and short. Everything is switched off for people
+   who have "reduce motion" turned on (see the end of this section).
+   ===================================================== */
+
+@keyframes fadeIn   { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeCircle { from { opacity: 0; } to { opacity: 0.85; } }
+@keyframes fadeUp   { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes viewIn   { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes float    { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes lightUp  { from { opacity: 0.35; } to { opacity: 1; color: var(--navy); } }
+
+/* ---------- Landing: hero entrance (plays once when the page opens) ---------- */
+.hero-title   { animation: fadeUp 0.8s ease 0.05s both; }
+.hero-lead    { animation: fadeUp 0.8s ease 0.20s both; }
+.hero-text    { animation: fadeUp 0.8s ease 0.30s both; }
+.hero-buttons { animation: fadeUp 0.8s ease 0.40s both; }
+.hero-checks  { animation: fadeUp 0.8s ease 0.50s both; }
+.hero-circle  { animation: fadeCircle 1.2s ease 0.1s both; }
+.doctor-frame { animation: fadeUp 0.9s ease 0.25s both; }
+
+/* The "Care, coordinated" card appears, then drifts very slowly */
+.hero-badge { animation: fadeIn 0.6s ease 0.9s both, float 6s ease-in-out 1.5s infinite; }
+
+/* ---------- Landing: scroll reveal (classes are added by script.js) ---------- */
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.in-view { opacity: 1; transform: none; }
+
+/* The line between the five steps draws itself from left to right */
+.steps.draw-line::before { transform: scaleX(0); transform-origin: left center; transition: transform 1.3s ease 0.2s; }
+.steps.draw-line.in-view::before { transform: scaleX(1); }
+
+/* ---------- Hover effects ---------- */
+.feature-card, .trust-card { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.feature-card:hover, .trust-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.feature-icon { transition: transform 0.25s ease; }
+.feature-card:hover .feature-icon, .trust-card:hover .feature-icon { transform: scale(1.08); }
+
+.btn { transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(59, 139, 208, 0.34); }
+.btn-outline:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(0); }
+.arrow { display: inline-block; transition: transform 0.2s ease; }
+.btn:hover .arrow { transform: translateX(4px); }
+
+.stat-card { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+
+/* ---------- Screens and dashboard pages fade in ---------- */
+#dashboard-page:not(.hidden), #auth-page:not(.hidden) { animation: fadeIn 0.4s ease both; }
+.auth-card { animation: fadeUp 0.5s ease 0.05s both; }
+.view.active { animation: viewIn 0.3s ease both; }
+
+/* ---------- Timeline: events appear one after another ---------- */
+.tl-item { animation: fadeUp 0.5s ease both; animation-delay: calc(var(--i, 0) * 90ms); }
+
+/* ---------- Upload card ---------- */
+.upload-card { transition: border-color 0.2s, background 0.2s, transform 0.2s; }
+.upload-card.dragover { border-color: var(--blue); background: var(--sky); transform: scale(1.01); }
+.upload-state:not(.hidden) { animation: fadeIn 0.35s ease both; }
+
+/* The three processing lines light up one at a time (visual only, no fake percentages) */
+.process-list li { opacity: 0.35; animation: lightUp 0.5s ease forwards; }
+.process-list li:nth-child(1) { animation-delay: 0.2s; }
+.process-list li:nth-child(2) { animation-delay: 1.6s; }
+.process-list li:nth-child(3) { animation-delay: 3.0s; }
+
+/* ---------- Reduce motion: turn everything off ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+  .hero-badge { animation: none !important; }
+  .reveal { opacity: 1 !important; transform: none !important; }
 }
