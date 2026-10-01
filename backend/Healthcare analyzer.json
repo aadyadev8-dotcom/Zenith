@@ -1,0 +1,346 @@
+{
+  "name": "Healthcare analyzer",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "caremate-process",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -272,
+        336
+      ],
+      "id": "781dddf2-f51b-46c2-969b-8764c4e7dacd",
+      "name": "Webhook",
+      "webhookId": "53a64fb4-d6eb-4c8f-84be-0bb576df9c2a"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        24,
+        888
+      ],
+      "id": "33201705-16b8-493b-8890-fed5d71e3221",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "XHALO54uiGlYpghp",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "=You are an expert clinical document reader. Extract all text from all attached PDF/image prescription(s) or lab report(s) verbatim. Combine all extracted text into a single cohesive medical narrative. Preserve all key patient details, medications, dosages, lab values, dates, and doctor instructions.",
+        "inputType": "binary",
+        "binaryPropertyName": "file",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -272,
+        664
+      ],
+      "id": "f4884829-282e-4564-88d6-b4012ee32310",
+      "name": "Agent 1 - OCR Reader",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "XHALO54uiGlYpghp",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a clinical data extraction expert. Analyze the raw medical text below and parse it into structured JSON with quality flags.\n\nRAW MEDICAL TEXT:\n{{ $json.content.parts[0].text }}\n\nCRITICAL INSTRUCTIONS:\n1. Extract patient details (name, age/DOB, report date, facility).\n2. Extract all clinical metrics, lab values, and medications.\n3. For EVERY extracted item, assign a 'badge':\n   - Set \"badge\": \"FACT\" if clear and standard.\n   - Set \"badge\": \"ASSUMPTION\" if blurry, unconfirmed, or ambiguous (include a 'flag_reason').\n\nReturn ONLY raw JSON matching this structure:\n{\n  \"patient_info\": {\n    \"name\": \"string\",\n    \"dob\": \"string\",\n    \"report_date\": \"string\",\n    \"facility\": \"string\"\n  },\n  \"extracted_entities\": [\n    {\n      \"category\": \"string\",\n      \"name\": \"string\",\n      \"value\": \"string\",\n      \"reference_range\": \"string or null\",\n      \"badge\": \"FACT | ASSUMPTION\",\n      \"flag_reason\": \"string or null\"\n    }\n  ]\n}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a strict clinical JSON extraction engine. Return raw, valid JSON only matching the requested schema. NEVER wrap in markdown code blocks (no ``` or ```json). Do not add preamble or conversational text."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -48,
+        664
+      ],
+      "id": "097ab03b-96ac-4761-93bf-610a8f9ea296",
+      "name": "Agent 2 - Facts and assumptions",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        376,
+        888
+      ],
+      "id": "1624b4e1-377d-4765-8471-f46c200c96d1",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "XHALO54uiGlYpghp",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a clinical history and timeline specialist. Analyze the structured clinical entities below to construct a patient timeline and clinical history summary.\n\nSTRUCTURED DATA:\n{{ JSON.stringify($json) }}\n\nCRITICAL INSTRUCTIONS:\n1. Extract or infer dates to order events chronologically.\n2. Group findings into: Baseline History vs. Current Visit Observations.\n3. Summarize key risks or flagged trends based on the data.\n\nReturn ONLY raw JSON matching this structure:\n{\n  \"patient_name\": \"string or null\",\n  \"timeline_events\": [\n    {\n      \"date\": \"string or null\",\n      \"event\": \"string\",\n      \"details\": \"string\"\n    }\n  ],\n  \"history_summary\": {\n    \"key_findings\": [\"string\"],\n    \"concerns\": [\"string\"]\n  }\n}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a strict clinical JSON extraction engine. Return raw, valid JSON only matching the requested schema. NEVER wrap in markdown code blocks (no ``` or ```json). Do not add preamble or conversational text."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        304,
+        664
+      ],
+      "id": "fe024e9c-3fc2-4531-ad87-e3e583041433",
+      "name": "Agent 3- Timeline"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "You are a clinical intake and appointment coordinator. Return raw, valid JSON only matching the requested schema. NEVER wrap in markdown code blocks (no ``` or ```json). Do not add preamble or conversational text.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a clinical intake and appointment coordinator. Return raw, valid JSON only matching the requested schema. NEVER wrap in markdown code blocks (no ``` or ```json). Do not add preamble or conversational text."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        656,
+        664
+      ],
+      "id": "cfec95a5-bd5b-4441-a237-4159a8dac308",
+      "name": "Agent 4 -  Appointment"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        728,
+        888
+      ],
+      "id": "d9008835-26da-40f6-8e61-66c8ad87c1f7",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "XHALO54uiGlYpghp",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an executive medical report synthesizer. Synthesize the clinical findings, timeline, and intake triage into a final structured medical summary report.\n\nINPUT DATA:\n{{ JSON.stringify($json) }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a strict clinical report generator. Return raw, valid JSON matching the requested schema. NEVER wrap in markdown code blocks (no ``` or ```json). Do not add preamble or conversational text.\n\nSchema:\n{\n  \"patient_id\": \"String\",\n  \"triage_summary\": {\n    \"priority_score\": \"Number (1-5)\",\n    \"chief_complaint\": \"String\",\n    \"recommended_department\": \"String\"\n  },\n  \"key_findings\": [\"String\"],\n  \"final_action_plan\": [\"String\"]\n}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1008,
+        664
+      ],
+      "id": "c3ef3330-f51e-448e-9471-a3cd5b45adc4",
+      "name": "Agent 6 -  Report Synthesizer",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1080,
+        888
+      ],
+      "id": "e92ee86b-b64a-4fef-9df0-8d5678583352",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "XHALO54uiGlYpghp",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Agent 1 - OCR Reader": [
+      {
+        "json": {
+          "content": {
+            "parts": [
+              {
+                "text": "FICTIONAL DEMONSTRATION DATA - NOT A REAL MEDICAL RECORD\nDoctor Consultation Note\n\nPatient: Aarav Mehta\nPatient ID: DEMO-48271\nDate of birth: 14 March 2002\n\nConsultation Note\nConsultation date: 20 September 2026\nClinician: Dr. Riya Sharma (Demo Physician)\nDepartment: General Medicine\n\nReason for visit: Patient reports intermittent tiredness over the previous two weeks and requested a routine review.\n\nClinical note: Fictional review completed. Recent laboratory report dated 19 September 2026 was available at the visit.\n\nPlan documented in this note: Continue routine observation and return for a follow-up consultation in approximately four weeks.\n\nImportant: This note is fictional and is not medical advice or a real clinical assessment.\nThis document was created solely for software/hackathon demonstration. It contains fictional information and must not be used for clinical decisions."
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "index": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent 2 - Facts and assumptions",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 1 - OCR Reader": {
+      "main": [
+        [
+          {
+            "node": "Agent 2 - Facts and assumptions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 2 - Facts and assumptions": {
+      "main": [
+        [
+          {
+            "node": "Agent 3- Timeline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent 3- Timeline",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 3- Timeline": {
+      "main": [
+        [
+          {
+            "node": "Agent 4 -  Appointment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent 4 -  Appointment",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 4 -  Appointment": {
+      "main": [
+        [
+          {
+            "node": "Agent 6 -  Report Synthesizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent 6 -  Report Synthesizer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "95cbf039-8b9c-43f6-bf3c-d018de377798",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a4bb8f5ba03f53317653df8022b2876ded433d46c4c71d05eaaa018d7fe819bf"
+  },
+  "id": "AAVQei94sDV7c7SD",
+  "tags": []
+}
