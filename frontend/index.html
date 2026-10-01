@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CareMate · Your Health. Our Care.</title>
+  <meta name="description" content="CareMate brings your reports, prescriptions, appointments and follow-ups together in one simple place." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- =====================================================
+     ICONS (defined once, reused with <use href="#id">)
+     ===================================================== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-logo" viewBox="0 0 32 32">
+      <rect width="32" height="32" rx="9" fill="currentColor"/>
+      <path d="M16 24.5s-7-4.3-7-9.4A4.1 4.1 0 0 1 16 12.6a4.1 4.1 0 0 1 7 2.5c0 5.1-7 9.4-7 9.4Z" fill="#fff"/>
+      <path d="M16 14.2v5M13.5 16.7h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z M14 3v5h5 M9 13h6 M9 17h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-extract" viewBox="0 0 24 24"><path d="M4 7V5a1 1 0 0 1 1-1h2 M17 4h2a1 1 0 0 1 1 1v2 M20 17v2a1 1 0 0 1-1 1h-2 M7 20H5a1 1 0 0 1-1-1v-2 M8 9h8 M8 12h8 M8 15h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-timeline" viewBox="0 0 24 24"><path d="M12 3v18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="6" r="2" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="18" r="2" fill="#fff" stroke="currentColor" stroke-width="1.6"/><path d="M15 6h5M4 12h5M15 18h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 10h17 M8 3v4 M16 3v4 M8.5 14h2 M13.5 14h2 M8.5 17h2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-tasks" viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="17" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m8 9 1.5 1.5L12 8 M8 15l1.5 1.5L12 14 M14.5 9.5H17 M14.5 15.5H17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-briefing" viewBox="0 0 24 24"><path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1Z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 5.5H6.5A2 2 0 0 0 4.5 7.5v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-11a2 2 0 0 0-2-2H16 M12 11v5 M9.5 13.5h5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="13" y="4" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="13" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="13" y="13" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5 M12 14.5v2.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-hand" viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.8a4.3 4.3 0 0 1 7.5 2.7c0 5.4-7.5 10-7.5 10Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 3.5v2.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4.5 20c.8-3.8 3.8-5.8 7.5-5.8s6.7 2 7.5 5.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V5 M7.5 9.5 12 5l4.5 4.5 M4.5 15v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 4 2.8 19.5h18.4L12 4Z M12 10v4.5 M12 17.2v.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+
+
+<!-- =====================================================
+     PART 1: LANDING PAGE
+     ===================================================== -->
+<div id="landing-page">
+
+  <!-- NAVIGATION -->
+  <header class="site-header">
+    <div class="container nav">
+      <a href="#home" class="brand" aria-label="CareMate home">
+        <svg class="brand-icon"><use href="#i-logo"/></svg>
+        <span>CareMate</span>
+      </a>
+
+      <nav class="nav-links" id="nav-links" aria-label="Main">
+        <a href="#home">Home</a>
+        <a href="#features">Features</a>
+        <a href="#how">How It Works</a>
+        <a href="#about">About</a>
+        <div class="nav-links-mobile-actions">
+          <a href="#" class="btn btn-ghost js-get-started">Sign In</a>
+          <a href="#" class="btn btn-primary js-get-started">Get Started</a>
+        </div>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="#" class="link-signin js-get-started">Sign In</a>
+        <a href="#" class="btn btn-primary js-get-started">Get Started</a>
+        <button class="icon-btn nav-toggle" id="nav-toggle" aria-label="Open menu" aria-expanded="false">
+          <svg><use href="#i-menu"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero" id="home">
+      <div class="container hero-grid">
+
+        <div class="hero-copy">
+          <h1 class="hero-title">
+            <span class="t-navy">Your Health,</span>
+            <span class="t-accent">Our Care.</span>
+          </h1>
+          <p class="hero-lead">Your health information, organized and coordinated.</p>
+          <p class="hero-text">CareMate brings your reports, prescriptions, appointments and follow-ups together in one simple place, helping you stay organized throughout your healthcare journey.</p>
+
+          <div class="hero-buttons">
+            <a href="#" class="btn btn-primary btn-lg js-get-started">Get Started →</a>
+            <a href="#how" class="btn btn-outline btn-lg">Learn How It Works</a>
+          </div>
+
+          <ul class="hero-checks">
+            <li><svg><use href="#i-check"/></svg> Organize your records</li>
+            <li><svg><use href="#i-check"/></svg> Track appointments</li>
+            <li><svg><use href="#i-check"/></svg> Stay on top of follow-ups</li>
+          </ul>
+        </div>
+
+        <div class="hero-visual">
+          <div class="hero-circle" aria-hidden="true"></div>
+          <div class="doctor-frame">
+            <!-- Save your doctor photo next to index.html as doctor.jpg -->
+            <img src="assets/doctor1.png" alt="Doctor in a white coat" />
+          </div>
+          <div class="hero-badge">
+            <span class="hero-badge-icon"><svg><use href="#i-hand"/></svg></span>
+            <span>
+              <strong>Care, coordinated</strong>
+              <small>Reports, appointments and follow-ups in one place</small>
+            </span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- BRAND QUOTE -->
+    <section class="quote-strip">
+      <div class="container">
+        <p class="quote-main">“Your Health. Our Care.”</p>
+        <p class="quote-sub">Because better care starts with better coordination.</p>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="section section-soft" id="features">
+      <div class="container">
+        <div class="section-head">
+          <h2>Everything You Need for Better Care</h2>
+          <p>From your medical documents to your next appointment, CareMate keeps everything organized.</p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="feature-icon"><svg><use href="#i-doc"/></svg></div>
+            <h3>Document Organization</h3>
+            <p>Keep reports, prescriptions and clinical notes in one place.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon"><svg><use href="#i-extract"/></svg></div>
+            <h3>Information Extraction</h3>
+            <p>Important information is organized from your uploaded documents.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon"><svg><use href="#i-timeline"/></svg></div>
+            <h3>Patient Timeline</h3>
+            <p>See important healthcare events in chronological order.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon"><svg><use href="#i-calendar"/></svg></div>
+            <h3>Appointment Preparation</h3>
+            <p>Know what documents and information you may need before your appointment.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon"><svg><use href="#i-tasks"/></svg></div>
+            <h3>Follow-up Tracking</h3>
+            <p>Keep track of important follow-up tasks and reminders.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon"><svg><use href="#i-briefing"/></svg></div>
+            <h3>Doctor Briefing</h3>
+            <p>Create a concise summary from your uploaded healthcare information.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="section" id="how">
+      <div class="container">
+        <div class="section-head">
+          <h2>From Documents to Coordinated Care</h2>
+          <p>Five simple steps, from your first upload to your next appointment.</p>
+        </div>
+
+        <ol class="steps">
+          <li class="step">
+            <span class="step-num">01</span>
+            <h3>Upload Documents</h3>
+            <p>Add reports, prescriptions or notes.</p>
+          </li>
+          <li class="step">
+            <span class="step-num">02</span>
+            <h3>Information Is Extracted</h3>
+            <p>Dates, results and details are read from your files.</p>
+          </li>
+          <li class="step">
+            <span class="step-num">03</span>
+            <h3>Your Timeline Is Organized</h3>
+            <p>Events are placed in order.</p>
+          </li>
+          <li class="step">
+            <span class="step-num">04</span>
+            <h3>Appointments &amp; Follow-ups Are Coordinated</h3>
+            <p>See what is coming up and what is pending.</p>
+          </li>
+          <li class="step">
+            <span class="step-num">05</span>
+            <h3>A Doctor Briefing Is Prepared</h3>
+            <p>A short summary you can bring to your visit.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- TRUST / HUMAN CONTROL -->
+    <section class="section section-blue" id="about">
+      <div class="container">
+        <div class="section-head">
+          <h2>Technology That Supports Your Care</h2>
+          <p>CareMate is built for care coordination. It organizes information and leaves decisions to you and your healthcare professionals.</p>
+        </div>
+
+        <div class="trust-grid">
+          <article class="trust-card">
+            <div class="feature-icon teal"><svg><use href="#i-lock"/></svg></div>
+            <h3>Secure &amp; Private</h3>
+            <p>Your healthcare information should always be handled carefully.</p>
+          </article>
+          <article class="trust-card">
+            <div class="feature-icon purple"><svg><use href="#i-user"/></svg></div>
+            <h3>Human in Control</h3>
+            <p>CareMate helps organize information, while healthcare professionals and patients remain in control of decisions.</p>
+          </article>
+          <article class="trust-card">
+            <div class="feature-icon"><svg><use href="#i-eye"/></svg></div>
+            <h3>Clear Information</h3>
+            <p>Facts and uncertain information are clearly distinguished.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="section cta-section">
+      <div class="container">
+        <div class="cta-banner">
+          <h2>Your Health. Our Care.</h2>
+          <p>Bring your healthcare information together and make every next step easier to manage.</p>
+          <a href="#" class="btn btn-primary btn-lg js-get-started">Get Started →</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a href="#home" class="brand">
+          <svg class="brand-icon"><use href="#i-logo"/></svg>
+          <span>CareMate</span>
+        </a>
+        <p class="footer-tagline">Your Health. Our Care.</p>
+      </div>
+      <nav class="footer-links" aria-label="Footer">
+        <a href="#home">Home</a>
+        <a href="#features">Features</a>
+        <a href="#how">How It Works</a>
+        <a href="#about">About</a>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+      </nav>
+    </div>
+    <div class="container">
+      <p class="disclaimer">CareMate helps organize healthcare information and coordinate care. It does not provide diagnosis or treatment advice.</p>
+    </div>
+  </footer>
+</div>
+
+
+<!-- =====================================================
+     PART 2: PATIENT DASHBOARD  (hidden until "Get Started")
+     ===================================================== -->
+<div id="dashboard-page" class="hidden">
+
+  <div class="app-shell">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top">
+        <a href="#" class="brand" id="brand-home" aria-label="Back to CareMate home">
+          <svg class="brand-icon"><use href="#i-logo"/></svg>
+          <span>CareMate</span>
+        </a>
+      </div>
+
+      <nav class="side-nav" aria-label="Dashboard">
+        <button class="side-link active" data-view="dashboard"><svg><use href="#i-grid"/></svg> Dashboard</button>
+        <button class="side-link" data-view="timeline"><svg><use href="#i-timeline"/></svg> Timeline</button>
+        <button class="side-link" data-view="documents"><svg><use href="#i-doc"/></svg> Documents</button>
+        <button class="side-link" data-view="appointments"><svg><use href="#i-calendar"/></svg> Appointments</button>
+        <button class="side-link" data-view="followups"><svg><use href="#i-tasks"/></svg> Follow-ups</button>
+        <button class="side-link" data-view="briefing"><svg><use href="#i-briefing"/></svg> Doctor Briefing</button>
+      </nav>
+
+      <button class="side-back" id="back-to-landing"><svg><use href="#i-back"/></svg> Back to home page</button>
+    </aside>
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+      <!-- HEADER -->
+      <header class="topbar">
+        <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open menu"><svg><use href="#i-menu"/></svg></button>
+        <div class="topbar-title">
+          <h1 id="page-title">Good morning 👋</h1>
+          <p id="page-subtitle">Here's your care overview.</p>
+        </div>
+        <div class="profile">
+          <span class="profile-name">Patient</span>
+          <span class="avatar"><svg><use href="#i-user"/></svg></span>
+        </div>
+      </header>
+
+      <div class="content">
+
+        <!-- ============ VIEW: DASHBOARD ============ -->
+        <section class="view active" id="view-dashboard">
+
+          <div class="stats">
+            <div class="stat-card">
+              <span class="stat-icon"><svg><use href="#i-doc"/></svg></span>
+              <div><strong id="stat-reports">0</strong><span>Reports</span></div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon"><svg><use href="#i-calendar"/></svg></span>
+              <div><strong id="stat-upcoming">0</strong><span>Upcoming</span></div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon"><svg><use href="#i-tasks"/></svg></span>
+              <div><strong id="stat-followups">0</strong><span>Follow-ups</span></div>
+            </div>
+          </div>
+
+          <!-- UPLOAD CARD -->
+          <div class="card upload-card" id="upload-card">
+
+            <!-- state: idle -->
+            <div class="upload-state" id="upload-idle">
+              <span class="upload-icon"><svg><use href="#i-upload"/></svg></span>
+              <div class="upload-text">
+                <h2>Add your medical documents</h2>
+                <p>Upload reports, prescriptions, clinical notes or appointment documents.</p>
+                <small>Supported: PDF, PNG, JPG</small>
+              </div>
+              <button class="btn btn-primary" id="upload-btn">+ Upload Document</button>
+            </div>
+
+            <!-- state: processing -->
+            <div class="upload-state hidden" id="upload-processing">
+              <span class="spinner" aria-hidden="true"></span>
+              <div class="upload-text">
+                <h2>Processing your document...</h2>
+                <ul class="process-list">
+                  <li>Extracting information...</li>
+                  <li>Organizing your care timeline...</li>
+                  <li>Checking appointments and follow-ups...</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- state: error -->
+            <div class="upload-state hidden" id="upload-error" role="alert">
+              <span class="upload-icon warn"><svg><use href="#i-warn"/></svg></span>
+              <div class="upload-text">
+                <h2>We couldn't process this document.</h2>
+                <p>Please try again or upload another file.</p>
+              </div>
+              <button class="btn btn-primary" id="retry-btn">Try Again</button>
+            </div>
+
+            <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" hidden />
+          </div>
+
+          <div class="grid-2">
+            <div class="stack">
+              <div class="card">
+                <h2 class="card-title">Upcoming Appointment</h2>
+                <div id="dash-appointment"></div>
+              </div>
+              <div class="card">
+                <h2 class="card-title">Follow-up Tasks</h2>
+                <div id="dash-followups"></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <h2 class="card-title">Recent Documents</h2>
+                <button class="text-link" data-goto="documents">View all</button>
+              </div>
+              <div id="dash-documents"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ VIEW: TIMELINE ============ -->
+        <section class="view" id="view-timeline">
+          <div class="card">
+            <div class="card-head">
+              <h2 class="card-title">Your care timeline</h2>
+              <div class="legend">
+                <span class="badge badge-fact">FACT</span>
+                <span class="badge badge-assumption">ASSUMPTION</span>
+              </div>
+            </div>
+            <div id="timeline-list"></div>
+          </div>
+        </section>
+
+        <!-- ============ VIEW: DOCUMENTS ============ -->
+        <section class="view" id="view-documents">
+          <div class="card">
+            <div class="card-head">
+              <h2 class="card-title">Documents</h2>
+              <button class="btn btn-primary btn-sm" id="upload-btn-2">+ Upload Document</button>
+            </div>
+            <div id="documents-list"></div>
+          </div>
+        </section>
+
+        <!-- ============ VIEW: APPOINTMENTS ============ -->
+        <section class="view" id="view-appointments">
+          <div id="appointments-list"></div>
+        </section>
+
+        <!-- ============ VIEW: FOLLOW-UPS ============ -->
+        <section class="view" id="view-followups">
+          <div class="card">
+            <h2 class="card-title">Follow-up tasks</h2>
+            <div id="followups-list"></div>
+          </div>
+        </section>
+
+        <!-- ============ VIEW: DOCTOR BRIEFING ============ -->
+        <section class="view" id="view-briefing">
+          <div id="briefing-content"></div>
+        </section>
+
+        <p class="disclaimer app-disclaimer">CareMate helps organize healthcare information and coordinate care. It does not provide diagnosis or treatment advice.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
